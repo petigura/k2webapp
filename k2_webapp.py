@@ -6,80 +6,26 @@ import copy
 from time import strftime
 
 import numpy as np
-
 from flask import Flask #  creating a flask application,
-from flask import render_template # render a HTML template with the given context variables
-from flask import request # access the request object which contains the request data
+# render a HTML template with the given context variables
+from flask import render_template 
+# access the request object which contains the request data
+from flask import request 
 from flask import url_for # get the URL corresponding to a view
 from flask import session # store and retrieve session variables in every view
 from flask import redirect # redirect to a given URL
-from flask import request # access the request object which contains the request data
+# access the request object which contains the request data
 from flask import flash  # to display messages in the template
-
 import pandas as pd
+
 import k2_catalogs
 
 host = os.environ['K2WEBAPP_HOST']
-host = "127.0.0.1"
-
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
 
 K2_ARCHIVE = os.environ['K2_ARCHIVE']
-K2_ARCHIVE_URL = K2_ARCHIVE.replace(
-    "/project/projectdirs/m1669/www/",
-    "http://portal.nersc.gov/project/m1669/"
-    )
-
-tps_basedir0 = '/project/projectdirs/m1669/www/K2/TPS/C0_11-12/'
-phot_basedir0 = '/project/projectdirs/m1669/www/K2/photometry/C0_11-12/'
-
-phot_plots = """\
-width ext
-33% .ff-frame.png 
-50% .ff.png 
-33% _xy.png 
-50% _gp_time_xy.png
-"""
-phot_plots = pd.read_table(sio(phot_plots),sep='\s')
-def phot_imagepars(starname):
-    """
-    Return image parameters given the starname
-    """
-    phot_basedir = copy.copy(phot_basedir0)
-    phot_basedir = phot_basedir.replace(
-        "/project/projectdirs/m1669/www/",
-        "http://portal.nersc.gov/project/m1669/")                         
-    phot_basename = os.path.join(phot_basedir,'output',starname)
-    phot_plots['url'] = phot_basename + phot_plots['ext']
-    imagepars = list(phot_plots['url width'.split()].itertuples(index=False))
-    return imagepars
-
-@app.route('/photometry/<starname>')
-def display_photometry(starname):
-    imagepars = phot_imagepars(starname)
-    templateVars = {"imagepars":imagepars}
-    return render_template('photometry_template.html',**templateVars)
-
-tps_plots = """\
-width ext
-100% .grid.pk.png
-50% .grid.lc.png
-"""
-tps_plots = pd.read_table(sio(tps_plots),sep='\s')
-
-def tps_imagepars(starname):
-    """
-    Return image parameters given the starname
-    """
-    tps_basedir = copy.copy(tps_basedir0)
-    tps_basedir = tps_basedir.replace(
-        "/project/projectdirs/m1669/www/",
-        "http://portal.nersc.gov/project/m1669/")                         
-    tps_basedir = os.path.join(tps_basedir,'output/%s/%s' % (starname,starname))
-    tps_plots['url'] = tps_basedir + tps_plots['ext']
-    imagepars = list(tps_plots['url width'.split()].itertuples(index=False))
-    return imagepars
+K2_ARCHIVE_URL = "http://portal.nersc.gov/project/m1669/K2/"
 
 def is_eKOI_string(d):
     """
@@ -164,10 +110,6 @@ is_EB_buttons = {
     'N':'N'
 }
 
-def get_tpspath(run,starname_url):
-    tpspath = os.path.join(K2_ARCHIVE,'TPS/%s/' % run )
-    return tpspath
-
 def starname_to_dbidx(dbpath,starname):
     print "connecting to database %s" % dbpath 
 
@@ -190,7 +132,8 @@ class Vetter(object):
         self.k2_camp = k2_camp
         self.run = run
         self.starname_url = starname_url
-        self.tpspath = get_tpspath(run,starname_url)
+
+        self.tpspath = os.path.join(K2_ARCHIVE,'TPS/%s/' % run )
         self.dbpath = os.path.join(K2_ARCHIVE,self.tpspath,'scrape.db')
         cat = k2_catalogs.read_cat(k2_camp)
         cat.index = cat.epic.astype(str)
@@ -198,7 +141,7 @@ class Vetter(object):
 
     def starname_to_dbidx(self):
         return starname_to_dbidx(self.dbpath,self.starname_url)
-    def get_display_vetting_templateVars(self):
+    def get_display_vetting_tempVars(self):
         cat = self.cat
         dbidx = self.starname_to_dbidx()
 
@@ -224,9 +167,7 @@ class Vetter(object):
         table,tablelong = map(lambda x : dict(x.iloc[0]),[table,tablelong])
 
         table['Depth [ppt]'] = 1e3*tablelong['mean']
-        templateVars = { 
-            "tps_imagepars":tps_imagepars(starname),
-            "phot_imagepars":phot_imagepars(starname),
+        tempVars = { 
             "table":table,
             "tablelong":tablelong,
             "cattable":cat.ix[starname]
@@ -236,35 +177,37 @@ class Vetter(object):
         coords = map(list,coords)
         target = dict(cat.ix[starname]['ra dec'.split()])
         target['starname'] = starname
-        templateVars['target'] = target
-
+        tempVars['target'] = target
+        starcoords = cat.ix[[starname]]['ra dec'.split()].itertuples(index=False),
         chartkw = dict(
             coords = coords,
-            starcoords = cat.ix[[starname]]['ra dec'.split()].itertuples(index=False),
+            starcords = starcoords,
             starname = starname
         )
 
-        templateVars = dict(templateVars,**chartkw)
-        templateVars['is_eKOI_string'] = is_eKOI_string(dfdict)
-        templateVars['is_EB_string'] = is_EB_string(dfdict)
-        templateVars['is_EB_buttons'] = is_EB_buttons
+        tempVars = dict(tempVars,**chartkw)
+        tempVars['is_eKOI_string'] = is_eKOI_string(dfdict)
+        tempVars['is_EB_string'] = is_EB_string(dfdict)
+        tempVars['is_EB_buttons'] = is_EB_buttons
 
-        templateVars['run'] = run
+        tempVars['run'] = run
 
-        templateVars['phot_outdir'] = os.path.join(
+        tempVars['phot_outdir'] = os.path.join(
             K2_ARCHIVE_URL,'photometry/%s/output/%s/' % (run,starname)
             )
-        templateVars['tps_outdir'] = os.path.join(
+        tempVars['tps_outdir'] = os.path.join(
             K2_ARCHIVE_URL,'TPS/%s/output/%s/' % (run,starname)
             )
-        return templateVars
+        return tempVars
 
 @app.route('/vetting/<k2_camp>/<run>/<starname_url>',methods=['GET','POST'])
 def display_vetting(k2_camp,run,starname_url):
     vetter = Vetter(k2_camp,run,starname_url)
-    templateVars = vetter.get_display_vetting_templateVars()
-    print templateVars['phot_outdir']
-    html = render_template('vetting_template_C1.html',**templateVars)
+    tempVars = vetter.get_display_vetting_tempVars()
+    print "tpsoutdir" +tempVars['tps_outdir']
+
+    html = render_template('vetting_template_C1.html',**tempVars)
+
     return html
 
 @app.route('/vetting/list/<k2_camp>/<run>/',methods=['GET','POST'])
@@ -305,10 +248,10 @@ def display_vetting_list(k2_camp,run):
     res['starname_current'] = (res['starname']==starname_current)
     res = res.to_dict('records')
     
-    templateVars = vetter.get_display_vetting_templateVars()    
-    templateVars['res'] = res
-    print templateVars['tps_outdir']
-    template = render_template('vetting_session_template.html',**templateVars)
+    tempVars = vetter.get_display_vetting_tempVars()    
+    tempVars['res'] = res
+    print tempVars['tps_outdir']
+    template = render_template('vetting_session_template.html',**tempVars)
     return template
 
 def query_starname_list(dbpath,starname_list):
