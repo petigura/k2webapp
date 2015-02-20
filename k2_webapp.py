@@ -21,7 +21,7 @@ import pandas as pd
 import k2_catalogs
 
 host = os.environ['K2WEBAPP_HOST']
-port = os.environ['K2WEBAPP_PORT']
+port = int(os.environ['K2WEBAPP_PORT'])
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
 
@@ -291,4 +291,4 @@ def is_eKOI_to_color(is_eKOI):
         return 'LightGray'
 
 if __name__=="__main__":
-    app.run(host=host,port=25000,debug=True)
+    app.run(host=host,port=port,debug=True)
