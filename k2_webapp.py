@@ -17,6 +17,7 @@ from flask import redirect # redirect to a given URL
 # access the request object which contains the request data
 from flask import flash  # to display messages in the template
 import pandas as pd
+from werkzeug.contrib.profiler import ProfilerMiddleware
 
 import k2_catalogs
 
@@ -68,42 +69,35 @@ def is_EB_string(d):
         outstr = "Designated is %s on %s " % (is_EB,d['is_EB_date'])
     return outstr
 
-
-def is_eKOI_insert(dbpath,dbidx):
-    # Capture output from form.
-    keys = request.form.keys()
+def db_insert(dbpath,dbidx):
+    form = request.form
+    print form
+    keys = form.keys()
     if len(keys)==0:
-        pass
-    if (keys.count('is_eKOI')==1) or (keys.count('not_eKOI')==1):
-        if keys.count('is_eKOI')==1:
-            d = dict(is_eKOI=1)
-        if keys.count('not_eKOI')==1:
-            d = dict(is_eKOI=0)
-        d['is_eKOI_date'] = strftime("%Y-%m-%d %H:%M:%S")
+        return None
 
-        sqlcmd = "UPDATE candidate SET is_eKOI=?,is_eKOI_date=? WHERE id=?"
-        values = (d['is_eKOI'],d['is_eKOI_date'],dbidx)
-
-#        dbpath = 
-        con = sqlite3.connect(dbpath)
-        with con:
-            cur = con.cursor()
-            cur.execute(sqlcmd,values)
-
-def is_EB_insert(dbpath,dbidx):
-    # Capture output from form.
-    keys = request.form.keys()
-    print keys
-        
-    if np.sum([keys.count(k) for k in is_EB_buttons.keys()])==1:
-        values = (keys[0],strftime("%Y-%m-%d %H:%M:%S"),dbidx)
-        sqlcmd = "UPDATE candidate SET is_EB=?,is_EB_date=? WHERE id=?"
-        con = sqlite3.connect(dbpath)
-        with con:
-            cur = con.cursor()
-            cur.execute(sqlcmd,values)
+    key = keys[0]
+    if key=='is_eKOI':
+        db_key = 'is_eKOI'
+        dict_db_val = dict(Yes=1, No=0, NULL=None)
+    elif key=='is_EB':
+        db_key = 'is_EB'
+        dict_db_val = dict(Y_OOT='Y_OOT', Y_SE='Y_SE', N='N', NULL=None)
     else:
-        pass
+        return None
+
+    d = {}
+    d[db_key] = dict_db_val[form[key]]
+    db_date_key = db_key+'_date'
+    d[db_date_key] = strftime("%Y-%m-%d %H:%M:%S")
+
+    sqlcmd = "UPDATE candidate SET %s=?,%s=? WHERE id=?" % (db_key,db_date_key)
+    values = (d[db_key],d[db_date_key],dbidx)
+    con = sqlite3.connect(dbpath)
+    with con:
+        cur = con.cursor()
+        cur.execute(sqlcmd,values)
+
 
 is_EB_buttons = {
     'Y_SE':'Y Secondary Eclipse',
@@ -149,9 +143,7 @@ class Vetter(object):
         starname = self.starname_url
         run = self.run
         dbpath = self.dbpath
-        is_eKOI_insert(dbpath,dbidx)
-        is_EB_insert(dbpath,dbidx)
-
+        db_insert(dbpath,dbidx)
         con = sqlite3.connect(self.dbpath)
         query = "SELECT * from candidate WHERE id=%i" % dbidx
         df = pd.read_sql(query,con)
@@ -190,9 +182,7 @@ class Vetter(object):
         tempVars['is_eKOI_string'] = is_eKOI_string(dfdict)
         tempVars['is_EB_string'] = is_EB_string(dfdict)
         tempVars['is_EB_buttons'] = is_EB_buttons
-
         tempVars['run'] = run
-
         tempVars['phot_outdir'] = os.path.join(
             K2_ARCHIVE_URL,'photometry/%s/output/%s/' % (run,starname)
             )
@@ -218,6 +208,7 @@ def display_vetting_list(k2_camp,run):
         keys = request.form.keys()
         if keys.count('starname_list')==1:
             starname_list = request.form.get('starname_list', '').split()
+            session['username'] = request.form.get('username','')
             session['starname_list'] = map(str,starname_list)
             session['nstars'] = len(starname_list)
         if keys.count('prev')==1:
@@ -240,8 +231,9 @@ def display_vetting_list(k2_camp,run):
     if session['starlist_index'] < 0:
         session['starlist_index'] = 0 
     if session['starlist_index'] >= session['nstars']:
-        session['starlist_index'] = session['nstars']-1
-
+        session['starlist_index'] = session['nstars'] - 1
+    
+    print session
     res = query_starname_list(dbpath,session['starname_list'])
     starname_current = res.iloc[ session['starlist_index']]['starname']
     vetter = Vetter(k2_camp,run,starname_current)
@@ -291,4 +283,7 @@ def is_eKOI_to_color(is_eKOI):
         return 'LightGray'
 
 if __name__=="__main__":
+#    app.config['PROFILE'] = True
+#    app.wsgi_app = ProfilerMiddleware(app.wsgi_app, restrictions=[30])
+
     app.run(host=host,port=port,debug=True)
