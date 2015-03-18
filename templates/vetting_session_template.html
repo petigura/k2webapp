@@ -3,6 +3,41 @@
 
 
 {% block sidebar %}
+  <h1> Vetting {{ starname }} </h1>
+  <form method="post" >
+    <h4> Is EKOI? </h4>
+    <p>
+      <input class="btn btn-primary" type="submit" name="is_eKOI" value="Yes">
+      <input class="btn btn-primary" type="submit" name="is_eKOI" value="No">
+      <input class="btn btn-primary" type="submit" name="is_eKOI" value="NULL">
+    </p>
+    <p>
+      {{ is_eKOI_string }} 
+    </p>
+    <h4> Is EB? </h4>
+    <p>
+      <input class="btn btn-primary" type="submit" name="is_EB" value="Y_OOT">
+      <input class="btn btn-primary" type="submit" name="is_EB" value="Y_SE">
+      <input class="btn btn-primary" type="submit" name="is_EB" value="N">
+      <input class="btn btn-primary" type="submit" name="is_EB" value="NULL">
+    </p>
+    <p>
+      {{ is_EB_string }} 
+    </p>
+    <h4> Navigation </h4>
+    <p>
+      <input class="btn btn-primary" type="submit" name="prev" value="Prev">
+      <input class="btn btn-primary" type="submit" name="next" value="Next">
+      <input class="btn btn-primary" type="submit" name="clear" value="Clear">
+    </p>
+    <h4> Comments </h4>
+  </form>
+  <form method="post" >
+    <textarea class="form-control" name="vetting_comment" rows="4" cols="30">{{ vetting_comment }}</textarea>
+    <input class="btn btn-primary" type="submit" value="Submit">
+  </form>
+
+
 {{ super() }}
 
 <div class="container" >  
@@ -24,33 +59,6 @@
 
 {% block main %}
 
-
-{% block buttons %}
-<div class="container">
-  <h1>Vetting {{ starname }}</h1>
-  <form method="post" >
-    <h4>Is EKOI?</h4>
-    <p>
-      <input class="btn btn-primary" type="submit" name="is_eKOI" value="Yes">
-      <input class="btn btn-primary" type="submit" name="is_eKOI" value="No">
-      <input class="btn btn-primary" type="submit" name="is_eKOI" value="NULL">
-      {{ is_eKOI_string }} 
-    </p>
-    <h4>Is EB?</h4>
-    <p>
-      <input class="btn btn-primary" type="submit" name="is_EB" value="Y_OOT">
-      <input class="btn btn-primary" type="submit" name="is_EB" value="Y_SE">
-      <input class="btn btn-primary" type="submit" name="is_EB" value="N">
-      <input class="btn btn-primary" type="submit" name="is_EB" value="NULL">
-      {{ is_EB_string }} 
-    <h4>Navigation</h4>
-    </p>
-      <input class="btn btn-primary" type="submit" name="prev" value="Prev">
-      <input class="btn btn-primary" type="submit" name="next" value="Next">
-      <input class="btn btn-primary" type="submit" name="clear" value="Clear">
-    </form>
-</div>
-{% endblock %}
 
   {% block content %}
     {{ super() }}

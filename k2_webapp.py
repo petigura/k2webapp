@@ -71,7 +71,6 @@ def is_EB_string(d):
 
 def db_insert(dbpath,dbidx):
     form = request.form
-    print form
     keys = form.keys()
     if len(keys)==0:
         return None
@@ -98,12 +97,32 @@ def db_insert(dbpath,dbidx):
         cur = con.cursor()
         cur.execute(sqlcmd,values)
 
+def db_insert_comments(dbpath,dbidx):
+    form = request.form
+    keys = form.keys()
+    if len(keys)==0:
+        return None
 
-is_EB_buttons = {
-    'Y_SE':'Y Secondary Eclipse',
-    'Y_OOT':'Y OOT Variability',
-    'N':'N'
-}
+    key = keys[0]
+    val = form[key]
+    if key=='vetting_comment':
+        db_key = 'vetting_comment'
+        dict_db_val = dict(Yes=1, No=0, NULL=None)
+    else:
+        return None 
+
+    sqlcmd = "UPDATE candidate SET %s='%s' WHERE id=%s" % (key,val,dbidx)
+    con = sqlite3.connect(dbpath)
+    with con:
+        cur = con.cursor()
+        cur.execute(sqlcmd)
+
+
+#is_EB_buttons = {
+#    'Y_SE':'Y Secondary Eclipse',
+#    'Y_OOT':'Y OOT Variability',
+#    'N':'N'
+#}
 
 def starname_to_dbidx(dbpath,starname):
     print "connecting to database %s" % dbpath 
@@ -139,11 +158,12 @@ class Vetter(object):
     def get_display_vetting_tempVars(self):
         cat = self.cat
         dbidx = self.starname_to_dbidx()
-
         starname = self.starname_url
         run = self.run
         dbpath = self.dbpath
         db_insert(dbpath,dbidx)
+        db_insert_comments(dbpath,dbidx)
+        # Pull current values from datavase row
         con = sqlite3.connect(self.dbpath)
         query = "SELECT * from candidate WHERE id=%i" % dbidx
         df = pd.read_sql(query,con)
@@ -181,7 +201,7 @@ class Vetter(object):
         tempVars = dict(tempVars,**chartkw)
         tempVars['is_eKOI_string'] = is_eKOI_string(dfdict)
         tempVars['is_EB_string'] = is_EB_string(dfdict)
-        tempVars['is_EB_buttons'] = is_EB_buttons
+#        tempVars['is_EB_buttons'] = is_EB_buttons
         tempVars['run'] = run
         tempVars['phot_outdir'] = os.path.join(
             K2_ARCHIVE_URL,'photometry/%s/output/%s/' % (run,starname)
@@ -189,6 +209,7 @@ class Vetter(object):
         tempVars['tps_outdir'] = os.path.join(
             K2_ARCHIVE_URL,'TPS/%s/output/%s/' % (run,starname)
             )
+        tempVars['vetting_comment'] = dfdict['vetting_comment']
         return tempVars
 
 @app.route('/vetting/<k2_camp>/<run>/<starname_url>',methods=['GET','POST'])
@@ -196,9 +217,7 @@ def display_vetting(k2_camp,run,starname_url):
     vetter = Vetter(k2_camp,run,starname_url)
     tempVars = vetter.get_display_vetting_tempVars()
     print "tpsoutdir" +tempVars['tps_outdir']
-
     html = render_template('vetting_template_C1.html',**tempVars)
-
     return html
 
 @app.route('/vetting/list/<k2_camp>/<run>/',methods=['GET','POST'])
@@ -233,7 +252,6 @@ def display_vetting_list(k2_camp,run):
     if session['starlist_index'] >= session['nstars']:
         session['starlist_index'] = session['nstars'] - 1
     
-    print session
     res = query_starname_list(dbpath,session['starname_list'])
     starname_current = res.iloc[ session['starlist_index']]['starname']
     vetter = Vetter(k2_camp,run,starname_current)
