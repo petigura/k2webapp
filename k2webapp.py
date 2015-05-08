@@ -19,7 +19,7 @@ from flask import flash  # to display messages in the template
 import pandas as pd
 from werkzeug.contrib.profiler import ProfilerMiddleware
 
-import k2_catalogs
+from k2phot.io_utils import k2_catalogs
 
 host = os.environ['K2WEBAPP_HOST']
 port = int(os.environ['K2WEBAPP_PORT'])
