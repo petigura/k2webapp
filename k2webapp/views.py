@@ -8,7 +8,7 @@ def display_vetting(k2_camp,run,starname_url):
     vetter = models.Vetter(k2_camp,run,starname_url)
     tempVars = vetter.get_display_vetting_tempVars()
     print "tpsoutdir" +tempVars['tps_outdir']
-    html = render_template('vetting_template_C1.html',**tempVars)
+    html = render_template('vetting.html',**tempVars)
     return html
 
 def display_vetting_list(k2_camp,run):
@@ -31,9 +31,9 @@ def display_vetting_list(k2_camp,run):
 
     # Default behavior when the page is first loaded
     if "starname_list" not in session:
-        return render_template('vetting_session_start_template.html')    
+        return render_template('vetting_session_start.html')    
     if len(session["starname_list"])==0:
-        return render_template('vetting_session_start_template.html')    
+        return render_template('vetting_session_start.html')    
     if "starlist_index" not in session:
         session["starlist_index"] = 0
 
@@ -50,5 +50,5 @@ def display_vetting_list(k2_camp,run):
     tempVars = vetter.get_display_vetting_tempVars()    
     tempVars['res'] = res
     print tempVars['tps_outdir']
-    template = render_template('vetting_session_template.html',**tempVars)
+    template = render_template('vetting_session.html',**tempVars)
     return template
