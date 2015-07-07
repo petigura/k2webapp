@@ -8,23 +8,57 @@ import pandas as pd
 K2_ARCHIVE = os.environ['K2_ARCHIVE']
 K2_ARCHIVE_URL = os.environ['K2_ARCHIVE_URL']
 
-
-class Vetter(object):
-    def __init__(self,k2_camp,run,starname_url):
+class Photometry(object):
+    def __init__(self, k2_camp, run, starname):
         self.k2_camp = k2_camp
         self.run = run
-        self.starname_url = starname_url
-
-        self.tpspath = os.path.join(K2_ARCHIVE,'TPS/%s/' % run )
-        self.dbpath = os.path.join(K2_ARCHIVE,self.tpspath,'scrape.db')
+        self.starname = starname
         cat = k2_catalogs.read_cat(k2_camp)
         cat.index = cat.epic.astype(str)
         self.cat = cat
+        self.phot_outdir = os.path.join(
+            K2_ARCHIVE_URL,'photometry/%s/output/%s/' % (run,starname)
+            )
+
+    def template_variables(self):
+        """
+        Return dictionary used to render the template.
+        """
+        tempVars = { 
+#            "table":table,
+#            "tablelong":tablelong,
+            "cattable":self.cat.ix[self.starname]
+        }
+
+        coords = self.cat['ra dec'.split()].itertuples(index=False)
+        coords = map(list,coords)
+        target = dict(self.cat.ix[self.starname]['ra dec'.split()])
+        target['starname'] = self.starname
+        tempVars['target'] = target
+        starcoords = self.cat.ix[[self.starname]]['ra dec'.split()].itertuples(index=False),
+        chartkw = dict(
+            coords = coords,
+            starcords = starcoords,
+            starname = self.starname
+        )
+        tempVars = dict(tempVars,**chartkw)
+
+        tempVars['phot_outdir'] = self.phot_outdir
+        return tempVars 
+        
+
+class Vetter(Photometry):
+    def __init__(self, k2_camp, run, starname_url):
+        super(self.__class__, self).__init__(k2_camp, run, starname_url)
+        self.tpspath = os.path.join(K2_ARCHIVE,'TPS/%s/' % run )
+        self.dbpath = os.path.join(K2_ARCHIVE,self.tpspath,'scrape.db')
 
     def starname_to_dbidx(self):
         return starname_to_dbidx(self.dbpath,self.starname_url)
 
-    def get_display_vetting_tempVars(self):
+    def template_variables(self):
+        tempBars = super(self.__class__, self).template_variables()
+
         cat = self.cat
         dbidx = self.starname_to_dbidx()
         starname = self.starname_url
@@ -47,37 +81,15 @@ class Vetter(object):
         table = df['P t0 tdur s2n grass num_trans'.split()]
         tablelong = df
         table,tablelong = map(lambda x : dict(x.iloc[0]),[table,tablelong])
-
         table['Depth [ppt]'] = 1e3*tablelong['mean']
-        tempVars = { 
-            "table":table,
-            "tablelong":tablelong,
-            "cattable":cat.ix[starname]
-       }
-
-        coords = cat['ra dec'.split()].itertuples(index=False)
-        coords = map(list,coords)
-        target = dict(cat.ix[starname]['ra dec'.split()])
-        target['starname'] = starname
-        tempVars['target'] = target
-        starcoords = cat.ix[[starname]]['ra dec'.split()].itertuples(index=False),
-        chartkw = dict(
-            coords = coords,
-            starcords = starcoords,
-            starname = starname
-        )
-
-        tempVars = dict(tempVars,**chartkw)
         tempVars['is_eKOI_string'] = is_eKOI_string(dfdict)
         tempVars['is_EB_string'] = is_EB_string(dfdict)
         tempVars['run'] = run
-        tempVars['phot_outdir'] = os.path.join(
-            K2_ARCHIVE_URL,'photometry/%s/output/%s/' % (run,starname)
-            )
         tempVars['tps_outdir'] = os.path.join(
             K2_ARCHIVE_URL,'TPS/%s/output/%s/' % (run,starname)
             )
         print tempVars['phot_outdir']
+        print dfdict
         tempVars['vetting_comment'] = dfdict['vetting_comment']
         return tempVars
 

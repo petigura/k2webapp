@@ -4,13 +4,18 @@
     <meta charset="UTF-8" />
     <title> {% block title %} {% endblock %}</title>
 
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
 
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+
 
     <!-- 2. You can add print and export feature by adding this line -->
-    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="http://code.highcharts.com/modules/exporting.js"></script>
 
     {% endblock %}
 
@@ -38,6 +43,24 @@
     width: 100%;
     margin:0 auto;
     }
+
+    section {
+    width: 100%;
+    margin: auto;
+    padding: 10px;
+    }
+
+    div#one {
+    width: 50%;
+    float: left;
+    }
+
+    div#two {
+    width:50%;
+    margin-left: 50%;
+    height: 200px;
+    }
+
     </style>
 
   </head>
