@@ -4,6 +4,11 @@ import os
 from k2phot.io_utils import k2_catalogs
 from flask import request 
 import pandas as pd
+from astropy.io import fits
+import numpy as np
+from k2phot.config         import bjd0
+import k2utils.photometry
+from k2phot.lightcurve import Normalizer
 
 K2_ARCHIVE = os.environ['K2_ARCHIVE']
 K2_ARCHIVE_URL = os.environ['K2_ARCHIVE_URL']
@@ -19,6 +24,8 @@ class Photometry(object):
         self.phot_outdir = os.path.join(
             K2_ARCHIVE_URL,'photometry/%s/output/%s/' % (run,starname)
             )
+
+        self.fitsfile = os.path.join(self.phot_outdir,'%s.fits' % starname)
 
     def template_variables(self):
         """
@@ -44,8 +51,21 @@ class Photometry(object):
         tempVars = dict(tempVars,**chartkw)
 
         tempVars['phot_outdir'] = self.phot_outdir
+
+        lc = k2utils.photometry.read_fits(self.fitsfile)
+        lc = pd.DataFrame(lc)
+        lc = lc[~lc.fmask]
+        t,f = lc.t,lc.fdt_t_rollmed
+        norm = Normalizer(np.nanmedian(f))
+        f = norm.norm(f) + 1
+        t = t - bjd0
+        timeseries =  [list(tup) for tup in zip(t,f)]
+        tempVars['timeseries'] = timeseries 
+        tempVars['master_ymin'] = min(f)
+        tempVars['xlabel'] = "BJD - %i" % bjd0
+        print min(f)
         return tempVars 
-        
+
 
 class Vetter(Photometry):
     def __init__(self, k2_camp, run, starname_url):
