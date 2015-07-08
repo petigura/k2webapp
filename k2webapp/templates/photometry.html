@@ -1,0 +1,32 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+
+{% extends "base.html" %}
+{% from 'macros.html' import table_list %}
+{% block title %} K2 Photometry {% endblock %}
+{% block head %}
+  {{ super() }}
+{% endblock %}
+
+
+
+{% block sidebar %}
+<font=-6>
+{{table_list(cattable)}}
+</font>
+    {% include 'image_median-frame.html' %}
+
+{% endblock %}
+{% block main %}
+    {% block content %}
+        {% include 'image_fdt_t_rollmed.html' %}
+        {% include 'image_fdt_t_roll_2D.html' %}
+        {% include 'image_square.html' %}
+
+        <script type="text/javascript">
+	     {% include 'master_detail.js' %}
+	</script>
+	
+<div id="container" style="min-width: 400px; height: 400px; margin: 0 auto"></div>
+
+{% endblock %}
+{% endblock %}
