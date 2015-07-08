@@ -4,14 +4,18 @@ import models
 import os
 K2_ARCHIVE = os.environ['K2_ARCHIVE']
 
-def display_photometry(k2_camp,run,starname_url):
-    phot = models.Photometry(k2_camp, run, starname_url)
+def display_photometry(k2_camp,run,starname):
+    phot = models.Photometry(k2_camp, run, starname)
     tempVars = phot.template_variables()
     html = render_template('photometry.html',**tempVars)
     return html
 
-def display_vetting(k2_camp,run,starname_url):
-    vetter = models.Vetter(k2_camp,run,starname_url)
+def photometry_json(k2_camp,run,starname):
+    phot = models.Photometry(k2_camp, run, starname)
+    return phot.get_photometry_json()
+
+def display_vetting(k2_camp,run,starname):
+    vetter = models.Vetter(k2_camp,run,starname)
     tempVars = vetter.template_variables() 
     print "tpsoutdir" +tempVars['tps_outdir']
     html = render_template('vetting.html',**tempVars)
