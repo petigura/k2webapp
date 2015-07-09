@@ -1,21 +1,25 @@
-var data = {{ scatter['data'] }}
-var xlabel = "{{ scatter['xlabel'] }}"
-var xlabel = "{{ scatter['xlabel'] }}"
-var ylabel = "{{ scatter['ylabel'] }}"
-var title = "{{ scatter['title'] }}"
-var subtitle = "Click to zoom";
+Highcharts.setOptions({
+   plotOptions: {
+      series: {
+         animation: false
+      }
+   }
+})
+
+var field_star_coords = {{ scatter_fov['field_star_coords'] }};
+var target_star_coords = {{ scatter_fov['target_star_coords'] }};
+var starname = "{{ starname }} ";
+var xlabel = "RA (deg)"; 
+var ylabel = "Dec (Deg)";
 
 $(function () {
-    $('#scatter').highcharts({
+    $('#scatter_fov').highcharts({
         chart: {
             type: 'scatter',
             zoomType: 'xy'
         },
         title: {
-            text: title
-        },
-        subtitle: {
-            text: subtitle,
+            text: 'Location of {{starname}} on FOV'
         },
         xAxis: {
             title: {
@@ -31,16 +35,7 @@ $(function () {
                 text: ylabel
             }
         },
-        legend: {
-            layout: 'vertical',
-            align: 'left',
-            verticalAlign: 'top',
-            x: 100,
-            y: 70,
-            floating: true,
-            backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF',
-            borderWidth: 1
-        },
+
         plotOptions: {
             scatter: {
                 marker: {
@@ -65,13 +60,21 @@ $(function () {
                 }
             }
         },
-        series: [{
-            name: 'Photometry',
-            color: 'rgba(223, 83, 83, .5)',
-            data: data
-          }]
+        series: [
+	    {
+		name: 'K2 Target Stars',
+		data: field_star_coords
+	    },
+	    {
+		name: starname,
+		marker: {radius: 10,},
+		data: target_star_coords
+	    }
+	]
     });
-});
+ });
+
+
 
 
 

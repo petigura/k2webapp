@@ -2,6 +2,7 @@
 
 {% extends "base.html" %}
 {% from 'macros.html' import table_list %}
+{% from 'macros.html' import scatter_coords %}
 {% block title %} K2 Photometry {% endblock %}
 {% block head %}
   {{ super() }}
@@ -12,18 +13,29 @@
   {{table_list(cattable)}}
   </font>
   {% include 'image_median-frame.html' %}
-{% endblock %}
 
+  <script type="text/javascript">	
+    {% include 'scatter_fov.js' %}
+  </script>
+<div id="scatter_fov" style="width: 350px; height: 350px; margin: 0 auto"></div>
+
+
+{#
+<a href=http://irsa.ipac.caltech.edu/applications/finderchart/#&id=Hydra_finderchart_finder_chart&projectId=finderchart&UserTargetWorldPt={{ scatter_fov['target_star_coords'] }};{{ scatter_fov['target_star_coords'] }};EQ_J2000&subsize=0.0375&sources=DSS,SDSS,2MASS&DoSearch=true target="_blank">
+    Finder Charts @ IPAC<br> (Opens New Window)
+  </a>
+#}
+
+{% endblock %}
 {% block main %}
     {% block content %}
+	<div id="scatter" style="min-width: 310px; height: 400px; max-width: 1600px; margin: 0 auto"></div>
         {% include 'image_fdt_t_rollmed.html' %}
         {% include 'image_fdt_t_roll_2D.html' %}
         {% include 'image_square.html' %}
-
         <script type="text/javascript">
 	  {% include 'scatter.js' %}
 	</script>
-	<div id="test" style="min-width: 310px; height: 400px; max-width: 800px; margin: 0 auto"></div>
 
      {% endblock %}
 {% endblock %}

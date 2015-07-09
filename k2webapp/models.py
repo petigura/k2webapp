@@ -32,26 +32,25 @@ class Photometry(object):
         Return dictionary used to render the template.
         """
         tempVars = { 
-#            "table":table,
-#            "tablelong":tablelong,
             "cattable":self.cat.ix[self.starname]
         }
-
-        coords = self.cat['ra dec'.split()].itertuples(index=False)
-        coords = map(list,coords)
-        target = dict(self.cat.ix[self.starname]['ra dec'.split()])
-        target['starname'] = self.starname
-        tempVars['target'] = target
-        starcoords = self.cat.ix[[self.starname]]['ra dec'.split()].itertuples(index=False),
-        chartkw = dict(
-            coords = coords,
-            starcords = starcoords,
-            starname = self.starname
-        )
-        tempVars = dict(tempVars,**chartkw)
-
         tempVars['phot_outdir'] = self.phot_outdir
+        tempVars['starname'] = self.starname
+        # Figure out location on the FOV
+        field_star_coords = self.cat['ra dec'.split()].itertuples(index=False)
+        field_star_coords = map(list,field_star_coords)
+        target_star_coords = \
+            [self.cat.ix[self.starname]['ra dec'.split()].tolist()]
 
+        print target_star_coords
+        scatter_fov = dict(
+            field_star_coords = field_star_coords,
+            target_star_coords = target_star_coords,
+            starname = self.starname
+            )
+        tempVars['scatter_fov'] = scatter_fov
+
+        # Prep the infomation for the interactive photometry plot
         lc = k2utils.photometry.read_fits(self.fitsfile)
         lc = pd.DataFrame(lc)
         lc = lc[~lc.fmask]
@@ -59,11 +58,13 @@ class Photometry(object):
         norm = Normalizer(np.nanmedian(f))
         f = norm.norm(f) + 1
         t = t - bjd0
-        timeseries =  [list(tup) for tup in zip(t,f)]
-        tempVars['timeseries'] = timeseries 
-        tempVars['master_ymin'] = min(f)
-        tempVars['xlabel'] = "BJD - %i" % bjd0
-        print min(f)
+        scatter = dict(
+            data=[list(tup) for tup in zip(t,f)],
+            xlabel = 'BJD-%i' % bjd0,
+            ylabel = 'Normalized Flux',
+            title = 'Normalized Flux'
+            )
+        tempVars['scatter'] = scatter
         return tempVars 
 
 
