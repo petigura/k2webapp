@@ -1,18 +1,20 @@
-var data = [[1,1],[3,2],[4,1]]
-var xlabel = 'BJD - XXX'
-var ylabel = 'Flux' 
+var data = [[1,2],[3,4]];
+var xlabel = "BJD - XX";
+var ylabel = "Flux";
+var title = "Photometry";
+var subtitle = "Click to zoom";
+
 $(function () {
-    $('#container').highcharts({
+    $('#test').highcharts({
         chart: {
             type: 'scatter',
-            zoomType: 'xy',
-
+            zoomType: 'xy'
         },
         title: {
-            text: 'Photometry'
+            text: title
         },
         subtitle: {
-            text: 'Click Region to Zoom'
+            text: subtitle,
         },
         xAxis: {
             title: {
@@ -21,20 +23,27 @@ $(function () {
             },
             startOnTick: true,
             endOnTick: true,
-            showLastLabel: true,
-
+            showLastLabel: true
         },
         yAxis: {
-            lineWidth: 0,
-            minorGridLineWidth: 0,
             title: {
                 text: ylabel
             }
         },
+        legend: {
+            layout: 'vertical',
+            align: 'left',
+            verticalAlign: 'top',
+            x: 100,
+            y: 70,
+            floating: true,
+            backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF',
+            borderWidth: 1
+        },
         plotOptions: {
             scatter: {
                 marker: {
-                    radius: 3,
+                    radius: 5,
                     states: {
                         hover: {
                             enabled: true,
@@ -53,16 +62,15 @@ $(function () {
                     headerFormat: '<b>{series.name}</b><br>',
                     pointFormat: '{point.x}, {point.y}'
                 }
-            },
-            series: {
-             animation: false
-        }
+            }
         },
         series: [{
+            name: 'Photometry',
             color: 'rgba(223, 83, 83, .5)',
             data: data
-        }]
+          }]
     });
 });
+
 
 

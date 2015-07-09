@@ -7,15 +7,13 @@
   {{ super() }}
 {% endblock %}
 
-
-
 {% block sidebar %}
-<font=-6>
-{{table_list(cattable)}}
-</font>
-    {% include 'image_median-frame.html' %}
-
+  <font=-6>
+  {{table_list(cattable)}}
+  </font>
+  {% include 'image_median-frame.html' %}
 {% endblock %}
+
 {% block main %}
     {% block content %}
         {% include 'image_fdt_t_rollmed.html' %}
@@ -23,10 +21,9 @@
         {% include 'image_square.html' %}
 
         <script type="text/javascript">
-	     {% include 'master_detail.js' %}
+	  {% include 'scatter.js' %}
 	</script>
-	
-<div id="container" style="min-width: 400px; height: 400px; margin: 0 auto"></div>
+	<div id="test" style="min-width: 310px; height: 400px; max-width: 800px; margin: 0 auto"></div>
 
-{% endblock %}
+     {% endblock %}
 {% endblock %}
