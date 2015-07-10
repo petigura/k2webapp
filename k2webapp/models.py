@@ -40,7 +40,7 @@ class Photometry(object):
         field_star_coords = self.cat['ra dec'.split()].itertuples(index=False)
         field_star_coords = map(list,field_star_coords)
         target_star_coords = \
-            [self.cat.ix[self.starname]['ra dec'.split()].tolist()]
+                        self.cat.ix[self.starname]['ra dec'.split()].tolist()
 
         print target_star_coords
         scatter_fov = dict(
