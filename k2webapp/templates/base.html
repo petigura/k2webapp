@@ -1,3 +1,5 @@
+<?php if (substr_count($_SERVER[‘HTTP_ACCEPT_ENCODING’], ‘gzip’)) ob_start(“ob_gzhandler”); else ob_start(); ?>
+
 <html lang="en">
   <head>
     {% block head %}
@@ -5,21 +7,21 @@
     <title> {% block title %} {% endblock %}</title>
 
     <!-- Latest compiled and minified CSS -->
-    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
 
     <!-- Optional theme -->
-    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
 
     <!-- Latest compiled and minified JavaScript -->
-    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
 
     <!-- Make sure to include the jquery language 
 	 Highcharts cannot run without it
       -->
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>          
-    <script src="http://code.highcharts.com/highcharts.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>          
+    <script src="//code.highcharts.com/highcharts.js"></script>
     <!-- 2. You can add print and export feature by adding this line -->
-    <script src="http://code.highcharts.com/modules/exporting.js"></script>
+    <script src="//code.highcharts.com/modules/exporting.js"></script>
 
     {% endblock %}
 
