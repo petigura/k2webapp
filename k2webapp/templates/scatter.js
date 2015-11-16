@@ -1,9 +1,8 @@
 var data = {{ scatter['data'] }}
-var xlabel = "{{ scatter['xlabel'] }}"
-var xlabel = "{{ scatter['xlabel'] }}"
+var xlabel = "BJD - 2454833"
 var ylabel = "{{ scatter['ylabel'] }}"
 var title = "{{ scatter['title'] }}"
-var subtitle = "Click to zoom";
+var subtitle = "Click to zoom"
 
 $(function () {
     $('#scatter').highcharts({
@@ -66,7 +65,7 @@ $(function () {
             }
         },
         series: [{
-            name: 'Photometry',
+            name: 'Phot',
             color: 'rgba(223, 83, 83, .5)',
             data: data
           }]
