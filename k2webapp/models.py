@@ -72,7 +72,6 @@ class Photometry(object):
             ylabel = 'Normalized Flux',
             title = 'Normalized Flux'
             )
-        print scatter
         tempVars['scatter'] = scatter
         return tempVars 
 

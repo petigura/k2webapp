@@ -12,13 +12,13 @@
   <font=-6>
   {{table_list(cattable)}}
   </font>
+  <a href="{{ phot_outdir}}/{{ starname }}.fits" download> Download as .fits file</a>
   {% include 'image_median-frame.html' %}
 
   <script type="text/javascript">	
     {% include 'scatter_fov.js' %}
   </script>
 <div id="scatter_fov" style="width: 350px; height: 350px; margin: 0 auto"></div>
-
 
 {#
 <a href=http://irsa.ipac.caltech.edu/applications/finderchart/#&id=Hydra_finderchart_finder_chart&projectId=finderchart&UserTargetWorldPt={{ scatter_fov['target_star_coords'] }};{{ scatter_fov['target_star_coords'] }};EQ_J2000&subsize=0.0375&sources=DSS,SDSS,2MASS&DoSearch=true target="_blank">
