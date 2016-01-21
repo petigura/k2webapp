@@ -1,12 +1,15 @@
+import os
 import sqlite3
 from time import strftime
-import os
-from k2phot.io_utils import k2_catalogs
+
 from flask import request 
 import pandas as pd
-from astropy.io import fits
 import numpy as np
-from k2phot.config         import bjd0
+from astropy.io import fits
+import h5py
+
+from k2phot.io_utils import k2_catalogs
+from k2phot.config import bjd0
 import k2utils.photometry
 from k2phot.lightcurve import Normalizer
 
@@ -72,7 +75,6 @@ class Photometry(object):
             ylabel = 'Normalized Flux',
             title = 'Normalized Flux'
             )
-        print scatter
         tempVars['scatter'] = scatter
         return tempVars 
 
@@ -82,7 +84,8 @@ class Vetter(Photometry):
         super(self.__class__, self).__init__(k2_camp, run, starname)
         self.tpspath = os.path.join(K2_ARCHIVE,'TPS/%s/' % run )
         self.dbpath = os.path.join(K2_ARCHIVE,self.tpspath,'scrape.db')
-
+        self.outdir = os.path.join(self.tpspath,'output/%s/' % self.starname )
+        
     def starname_to_dbidx(self):
         return starname_to_dbidx(self.dbpath,self.starname)
 
@@ -108,7 +111,8 @@ class Vetter(Photometry):
             return "Row returned must be unique"
 
         dfdict = dict(df.iloc[0] )
-        table = df['P t0 tdur s2n grass num_trans'.split()]
+        phot_basedir = dfdict['phot_basedir']
+        table = df['P t0 tdur s2n grass num_trans phot_basedir'.split()]
         tablelong = df
         table,tablelong = map(lambda x : dict(x.iloc[0]),[table,tablelong])
         table['Depth [ppt]'] = 1e3*tablelong['mean']
@@ -122,7 +126,44 @@ class Vetter(Photometry):
             K2_ARCHIVE_URL,'TPS/%s/output/%s/' % (run,starname)
             )
         tempVars['vetting_comment'] = dfdict['vetting_comment']
+        tempVars['phot_run'] = phot_basedir.split('/')[-3]
+        tempVars['k2_camp'] = self.k2_camp
 
+        h5file = os.path.join(self.outdir,"{}.grid.h5".format(self.starname))
+        with h5py.File(h5file) as h5:
+            fit = h5['dv']['fit']['fit'][:]
+            f = h5['dv']['fit']['f'][:]
+            t = h5['dv']['fit']['t'][:]
+            lc = h5['dv']['lc'][:]
+            rLbl = h5['dv']['rLbl'][:]
+            lcPF0 = h5['dv']['lcPF0'][:]
+
+        rLbl = pd.DataFrame(rLbl)
+        lc = pd.DataFrame(lc)
+        lcPF = pd.DataFrame(lcPF0)
+        lc = pd.merge(lc,rLbl,left_index=True,right_index=True) # Add in transit labels
+        lcPF = pd.merge(lcPF['t tPF'.split()],lc,on='t')
+        lcPF_even = lcPF[(lcPF.totRegLbl > 0) & (lcPF.totRegLbl % 2==0)]
+        lcPF_odd = lcPF[(lcPF.totRegLbl > 0) & (lcPF.totRegLbl % 2==1)]
+
+        
+        scatter_phasefold = dict(
+            data_phot=[list(tup) for tup in zip(t,f)],
+            data_fit=[list(tup) for tup in zip(t,fit)],
+            data_odd=[list(tup) for tup in zip(lcPF_odd.tPF,lcPF_odd.f)],
+            data_even=[list(tup) for tup in zip(lcPF_even.tPF,lcPF_even.f)],            
+            )
+        tempVars['scatter_phasefold'] = scatter_phasefold
+
+        b_in = (rLbl['tRegLbl']>=0) & ~lc['fmask']
+        b_out = (rLbl['tRegLbl']<0) & ~lc['fmask']
+        t = lc['t']
+        f = lc['f']
+        scatter_trans = dict(
+            data_out=[list(tup) for tup in zip(t[b_out],f[b_out])],
+            data_in=[list(tup) for tup in zip(t[b_in],f[b_in])],
+            )
+        tempVars['scatter_trans'] = scatter_trans
         return tempVars
 
 def starname_to_dbidx(dbpath,starname):
@@ -243,8 +284,11 @@ HAVING id=MAX(id)"""
             query += "AND starname in %s" % str(tuple(starname_list))
         cur.execute(query)
         res = cur.fetchall()
-    
+
     res = pd.DataFrame(res,columns=['starname','is_eKOI','is_EB'])
+    if len(res)==0:
+        return None
+    
     res.index = res.starname
     res = res.ix[starname_list]
     res['is_eKOI_color'] = res.is_eKOI.apply(is_eKOI_to_color)

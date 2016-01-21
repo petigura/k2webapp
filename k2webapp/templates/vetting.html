@@ -17,10 +17,16 @@
   <h3>Helpful Links </h3>
   <h5>(open new tab)</h5>
   <div class="list-group">
-    <a href="https://cfop.ipac.caltech.edu/k2/edit_target.php?id={{ starname }}" target="_blank"> 
-      K2-FOP
-    </a>
-
+    <p>
+        <a href="https://cfop.ipac.caltech.edu/k2/edit_target.php?id={{ starname }}" target="_blank"> 
+	  K2-FOP
+	</a>  
+    </p>
+    <p>
+        <a href="https://portal.nersc.gov/kp2/photometry/{{ k2_camp }}/{{ phot_run }}/{{ starname }}" target="_blank"> 
+	 Photometry
+	</a>
+    </p>
   </div>
 </div>
 
@@ -83,6 +89,15 @@ that transit number increases downward. Compelling transits appear as
 a sequence of SES peaks at phase = 0. 
    </div>
 </div>
+
+<div id="scatter_phasefold" style="min-width: 310px; height: 400px; max-width: 600px "></div>
+<div id="scatter_phottrans" style="min-width: 310px; height: 400px; max-width: 600px margin: 0 auto"></div>
+
+<script type="text/javascript">
+  {% include 'scatter_phottrans.js' %}
+  {% include 'scatter_phasefold.js' %}
+</script>
+
 
 <div id="image">
   <a href="{{ tps_outdir }}/{{ starname }}_dv.png">
