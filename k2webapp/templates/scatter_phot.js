@@ -1,6 +1,4 @@
 var data = {{ scatter['data'] }}
-var xlabel = "BJD - 2454833"
-var ylabel = "{{ scatter['ylabel'] }}"
 var title = "{{ scatter['title'] }}"
 var subtitle = "Click to zoom"
 
@@ -19,7 +17,7 @@ $(function () {
         xAxis: {
             title: {
                 enabled: true,
-                text: xlabel
+                text: 'BJD - 2454833'
             },
             startOnTick: true,
             endOnTick: true,
@@ -27,7 +25,7 @@ $(function () {
         },
         yAxis: {
             title: {
-                text: ylabel
+                text: 'Normalized Flux'
             }
         },
         legend: {
@@ -65,7 +63,7 @@ $(function () {
             }
         },
         series: [{
-            name: 'Phot',
+            name: 'Photomtery',
             color: 'rgba(223, 83, 83, .5)',
             data: data
           }]

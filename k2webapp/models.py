@@ -27,17 +27,25 @@ class Photometry(object):
 
         self.fitsfile = os.path.join(self.phot_outdir,'%s.fits' % starname)
 
-    def template_variables(self):
-        """
-        Return dictionary used to render the template.
-        """
+    def template_variables_common(self):
+        tempVars = {}
         tempVars = { 
             "cattable":self.cat.ix[self.starname]
         }
         tempVars['phot_outdir'] = self.phot_outdir
         tempVars['starname'] = self.starname
+        return tempVars
+
+    def template_variables(self):
+        """
+        Return dictionary used to render the template.
+        """
+        tempVars = self.template_variables_common()
         # Figure out location on the FOV
-        field_star_coords = self.cat['ra dec'.split()].itertuples(index=False)
+        field_star_coords = np.round(self.cat['ra dec'.split()],2).itertuples(index=False)
+        #field_star_coords = self.cat['ra dec'.split()].itertuples(index=False)
+        #field_star_coords = ["[%.1f,%.1f]" % i for i in field_star_coords]
+        
         field_star_coords = map(list,field_star_coords)
         target_star_coords = \
                         self.cat.ix[self.starname]['ra dec'.split()].tolist()
@@ -64,25 +72,26 @@ class Photometry(object):
             ylabel = 'Normalized Flux',
             title = 'Normalized Flux'
             )
+        print scatter
         tempVars['scatter'] = scatter
         return tempVars 
 
 
 class Vetter(Photometry):
-    def __init__(self, k2_camp, run, starname_url):
-        super(self.__class__, self).__init__(k2_camp, run, starname_url)
+    def __init__(self, k2_camp, run, starname):
+        super(self.__class__, self).__init__(k2_camp, run, starname)
         self.tpspath = os.path.join(K2_ARCHIVE,'TPS/%s/' % run )
         self.dbpath = os.path.join(K2_ARCHIVE,self.tpspath,'scrape.db')
 
     def starname_to_dbidx(self):
-        return starname_to_dbidx(self.dbpath,self.starname_url)
+        return starname_to_dbidx(self.dbpath,self.starname)
 
     def template_variables(self):
-        tempBars = super(self.__class__, self).template_variables()
+        tempVars = self.template_variables_common()
 
         cat = self.cat
         dbidx = self.starname_to_dbidx()
-        starname = self.starname_url
+        starname = self.starname
         run = self.run
         dbpath = self.dbpath
         db_insert(dbpath,dbidx)
@@ -103,15 +112,17 @@ class Vetter(Photometry):
         tablelong = df
         table,tablelong = map(lambda x : dict(x.iloc[0]),[table,tablelong])
         table['Depth [ppt]'] = 1e3*tablelong['mean']
+
+
+        tempVars['table'] = table
         tempVars['is_eKOI_string'] = is_eKOI_string(dfdict)
         tempVars['is_EB_string'] = is_EB_string(dfdict)
         tempVars['run'] = run
         tempVars['tps_outdir'] = os.path.join(
             K2_ARCHIVE_URL,'TPS/%s/output/%s/' % (run,starname)
             )
-        print tempVars['phot_outdir']
-        print dfdict
         tempVars['vetting_comment'] = dfdict['vetting_comment']
+
         return tempVars
 
 def starname_to_dbidx(dbpath,starname):
@@ -225,8 +236,11 @@ def query_starname_list(dbpath,starname_list):
         query = """
 SELECT starname,is_eKOI,is_EB from candidate 
 GROUP BY starname
-HAVING id=MAX(id)
-AND starname in %s""" % str(tuple(starname_list))
+HAVING id=MAX(id)"""
+        if len(starname_list)==1:
+            query += "AND starname is %s" % starname_list[0]
+        else:
+            query += "AND starname in %s" % str(tuple(starname_list))
         cur.execute(query)
         res = cur.fetchall()
     
