@@ -284,8 +284,11 @@ HAVING id=MAX(id)"""
             query += "AND starname in %s" % str(tuple(starname_list))
         cur.execute(query)
         res = cur.fetchall()
-    
+
     res = pd.DataFrame(res,columns=['starname','is_eKOI','is_EB'])
+    if len(res)==0:
+        return None
+    
     res.index = res.starname
     res = res.ix[starname_list]
     res['is_eKOI_color'] = res.is_eKOI.apply(is_eKOI_to_color)

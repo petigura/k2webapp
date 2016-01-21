@@ -53,6 +53,9 @@ def display_vetting_list(k2_camp,run):
         session['starlist_index'] = session['nstars'] - 1
 
     res = models.query_starname_list(dbpath,session['starname_list'])
+    if type(res)==type(None):
+        return render_template('vetting_session_start_nostars.html')    
+    
     starname_current = res.iloc[ session['starlist_index']]['starname']
     vetter = models.Vetter(k2_camp,run,starname_current)
     res['starname_current'] = (res['starname']==starname_current)
