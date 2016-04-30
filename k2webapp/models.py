@@ -78,12 +78,17 @@ class Photometry(object):
         tempVars['scatter'] = scatter
         return tempVars 
 
-
 class Vetter(Photometry):
-    def __init__(self, k2_camp, run, starname):
+    """
+    Vetter object
+    """
+    def __init__(self, k2_camp, run, candidatename):
+        starname, candidate = candidatename.split('.')
+        self.candidate = int(candidate)
         super(self.__class__, self).__init__(k2_camp, run, starname)
+        self.candidatename = candidatename
         self.tpspath = os.path.join(K2_ARCHIVE,'TPS/%s/' % run )
-        self.dbpath = os.path.join(K2_ARCHIVE,self.tpspath,'scrape.db')
+        self.dbpath = os.path.join(K2_ARCHIVE,'TPS/scrape.db')
         self.outdir = os.path.join(self.tpspath,'output/%s/' % self.starname )
         
     def starname_to_dbidx(self):
@@ -97,8 +102,9 @@ class Vetter(Photometry):
         starname = self.starname
         run = self.run
         dbpath = self.dbpath
-        db_insert(dbpath,dbidx)
-        db_insert_comments(dbpath,dbidx)
+        db_insert(dbpath, dbidx)
+        db_insert_comments(dbpath, dbidx)
+
         # Pull current values from datavase row
         con = sqlite3.connect(self.dbpath)
         query = "SELECT * from candidate WHERE id=%i" % dbidx
@@ -111,11 +117,11 @@ class Vetter(Photometry):
             return "Row returned must be unique"
 
         dfdict = dict(df.iloc[0] )
-        phot_basedir = dfdict['phot_basedir']
-        table = df['P t0 tdur s2n grass num_trans phot_basedir'.split()]
+        # phot_basedir = dfdict['phot_basedir']
+        table = df #df['P t0 tdur s2n grass num_trans phot_basedir'.split()]
         tablelong = df
         table,tablelong = map(lambda x : dict(x.iloc[0]),[table,tablelong])
-        table['Depth [ppt]'] = 1e3*tablelong['mean']
+        # table['Depth [ppt]'] = 1e3*tablelong['mean']
 
 
         tempVars['table'] = table
@@ -126,9 +132,10 @@ class Vetter(Photometry):
             K2_ARCHIVE_URL,'TPS/%s/output/%s/' % (run,starname)
             )
         tempVars['vetting_comment'] = dfdict['vetting_comment']
-        tempVars['phot_run'] = phot_basedir.split('/')[-3]
+        # tempVars['phot_run'] = phot_basedir.split('/')[-3]
         tempVars['k2_camp'] = self.k2_camp
-
+        tempVars['candidatename'] = self.candidatename
+        '''
         h5file = os.path.join(self.outdir,"{}.grid.h5".format(self.starname))
         with h5py.File(h5file) as h5:
             fit = h5['dv']['fit']['fit'][:]
@@ -164,9 +171,11 @@ class Vetter(Photometry):
             data_in=[list(tup) for tup in zip(t[b_in],f[b_in])],
             )
         tempVars['scatter_trans'] = scatter_trans
+        '''
+
         return tempVars
 
-def starname_to_dbidx(dbpath,starname):
+def starname_to_dbidx(dbpath, starname):
     print "connecting to database %s" % dbpath 
 
     con = sqlite3.connect(dbpath)
@@ -275,7 +284,7 @@ def query_starname_list(dbpath,starname_list):
     with con:
         cur = con.cursor()
         query = """
-SELECT starname,is_eKOI,is_EB from candidate 
+SELECT starname, is_eKOI, is_EB from candidate 
 GROUP BY starname
 HAVING id=MAX(id)"""
         if len(starname_list)==1:

@@ -37,7 +37,7 @@ def display_vetting_list(k2_camp,run):
         if keys.count('clear')==1:
             session.clear()
 
-    dbpath = os.path.join(K2_ARCHIVE,'TPS/%s/scrape.db' % run)
+    dbpath = os.path.join(K2_ARCHIVE,'TPS/scrape.db')
 
     # Default behavior when the page is first loaded
     if "starname_list" not in session:

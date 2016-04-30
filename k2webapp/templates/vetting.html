@@ -32,15 +32,6 @@
 
 </font>
 
-<div id="image">
-  <a href="{{ phot_outdir }}/{{ starname }}_0-median-frame.png">
-  <img src="{{ phot_outdir }}/{{ starname }}_0-median-frame.png" width="100%">
-  </a>
-  <div class="caption">
-     <p> Median image frame </p>
-   </div>
-</div>
-
 {% endblock %}
 {% block main %}
 {% block buttons %}
@@ -63,8 +54,8 @@
 {% block content %}
 
 <div id="image">
-  <a href="{{ tps_outdir }}/{{ starname }}.grid.pk.png">
-  <img src="{{ tps_outdir }}/{{ starname }}.grid.pk.png" width="100%">
+  <a href="{{ tps_outdir }}/{{ candidatename }}.png">
+  <img src="{{ tps_outdir }}/{{ candidatename }}.png" width="100%">
   </a>
   <div class="caption">
      <p> DV summary plots. </p> 
@@ -90,6 +81,10 @@ a sequence of SES peaks at phase = 0.
    </div>
 </div>
 
+
+{# Commenting out dynamic plots until I can read the new data structure
+
+
 <div id="scatter_phasefold" style="min-width: 310px; height: 400px; max-width: 600px "></div>
 <div id="scatter_phottrans" style="min-width: 310px; height: 400px; max-width: 600px margin: 0 auto"></div>
 
@@ -97,10 +92,10 @@ a sequence of SES peaks at phase = 0.
   {% include 'scatter_phottrans.js' %}
   {% include 'scatter_phasefold.js' %}
 </script>
-
+#}
 
 <div id="image">
-  <a href="{{ tps_outdir }}/{{ starname }}_dv.png">
+  <a href="{{ tps_outdir }}/{{ candidate }}_dv.png">
   <img src="{{ tps_outdir }}/{{ starname }}_dv.png" width="100%">
   </a>
   <div class="caption">
@@ -160,18 +155,9 @@ a sequence of SES peaks at phase = 0.
 </div>
 
 
-<div id="image">
-  <a href="{{ tps_outdir }}/{{ starname }}.grid.lc.png">
-  <img src="{{ tps_outdir }}/{{ starname }}.grid.lc.png" width="100%">
-  </a>
-  <div class="caption">
-     <p> Quick look plot </p>
-   </div>
-</div>
 
 
 {% endblock %}
-
 {% endblock %}
 
 <html>

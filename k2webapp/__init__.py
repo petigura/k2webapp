@@ -10,7 +10,6 @@ app.config['port'] = int(os.environ['K2WEBAPP_PORT'])
 from datetime import datetime
 print "webapp started %s" % datetime.now()
 
-
 @app.route('/photometry/<k2_camp>/<run>/<starname>')
 def display_photometry(k2_camp,run,starname):
     return k2webapp.views.display_photometry( k2_camp,run,starname)
