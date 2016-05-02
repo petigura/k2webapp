@@ -276,7 +276,7 @@ def db_insert_comments(dbpath,dbidx):
     else:
         return None 
 
-    sqlcmd = "UPDATE candidate SET %s='%s' WHERE id=%s" % (key,val,dbidx)
+    sqlcmd = """UPDATE candidate SET %s="%s" WHERE id=%s""" % (key,val,dbidx)
     con = sqlite3.connect(dbpath)
     with con:
         cur = con.cursor()
