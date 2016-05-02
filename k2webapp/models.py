@@ -108,6 +108,7 @@ class Vetter(Photometry):
         # Pull current values from datavase row
         con = sqlite3.connect(self.dbpath)
         query = "SELECT * from candidate WHERE id=%i" % dbidx
+        print query
         df = pd.read_sql(query,con)
         con.close()
 
@@ -279,29 +280,27 @@ def db_insert_comments(dbpath,dbidx):
         cur = con.cursor()
         cur.execute(sqlcmd)
 
-def query_starname_list(dbpath,starname_list):
+def query_candidatename_list(dbpath, run, candidatename_list):
     con = sqlite3.connect(dbpath)
     with con:
         cur = con.cursor()
         query = """
-SELECT starname, is_eKOI, is_EB from candidate 
-GROUP BY starname
-HAVING id=MAX(id)"""
-        if len(starname_list)==1:
-            query += "AND starname is %s" % starname_list[0]
+SELECT starname || '.' || substr('00'||candidate, -2, 2) as candidatename, is_eKOI, is_EB FROM candidate WHERE run='{}'
+""".format(run)
+        if len(candidatename_list)==1:
+            query += "AND candidatename is '%s'" % candidatename_list[0]
         else:
-            query += "AND starname in %s" % str(tuple(starname_list))
+            query += "AND candidatename in %s" % str(tuple(candidatename_list))
         cur.execute(query)
         res = cur.fetchall()
+        print res
 
-    res = pd.DataFrame(res,columns=['starname','is_eKOI','is_EB'])
+    res = pd.DataFrame(res,columns=['candidatename','is_eKOI','is_EB'])
+
     if len(res)==0:
         return None
     
-    res.index = res.starname
-    res = res.ix[starname_list]
-    res['is_eKOI_color'] = res.is_eKOI.apply(is_eKOI_to_color)
-    res['is_EB_color'] = res.is_EB.apply(is_EB_to_color)
+    res.index = res.candidatename
     return res
 
 def is_EB_to_color(s):
