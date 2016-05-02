@@ -91,14 +91,14 @@ class Vetter(Photometry):
         self.dbpath = os.path.join(K2_ARCHIVE,'TPS/scrape.db')
         self.outdir = os.path.join(self.tpspath,'output/%s/' % self.starname )
         
-    def starname_to_dbidx(self):
-        return starname_to_dbidx(self.dbpath,self.starname)
+    def candidatename_to_dbidx(self):
+        return candidatename_to_dbidx(self.dbpath, self.run, self.candidatename)
 
     def template_variables(self):
         tempVars = self.template_variables_common()
 
         cat = self.cat
-        dbidx = self.starname_to_dbidx()
+        dbidx = self.candidatename_to_dbidx()
         starname = self.starname
         run = self.run
         dbpath = self.dbpath
@@ -176,21 +176,23 @@ class Vetter(Photometry):
 
         return tempVars
 
-def starname_to_dbidx(dbpath, starname):
+def candidatename_to_dbidx(dbpath, run, candidatename):
     print "connecting to database %s" % dbpath 
 
     con = sqlite3.connect(dbpath)
     with con:
         cur = con.cursor()
         query = """
-        SELECT id from candidate 
-        GROUP BY starname
-        HAVING id=MAX(id)
-        AND starname=%s""" % starname
+SELECT id
+FROM candidate
+WHERE run='{}' 
+AND  starname || '.' || substr('00'|| candidate, -2, 2)='{}'
+""".format(run, candidatename)
+        cur.execute(query)
+        dbidx, = cur.fetchone()
+        print dbidx
+        return dbidx
 
-    cur.execute(query)
-    dbidx, = cur.fetchone()
-    return dbidx
 
 def is_eKOI_string(d):
     """
